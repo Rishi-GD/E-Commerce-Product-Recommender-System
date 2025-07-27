@@ -1,0 +1,40 @@
+# 🛍️ E-Commerce Product Recommender System
+
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import linear_kernel
+
+# 1. Sample product data
+data = {
+    'product_id': [1, 2, 3, 4, 5],
+    'name': ['Wireless Mouse', 'Bluetooth Speaker', 'Wired Keyboard', 'Laptop Stand', 'Gaming Headset'],
+    'description': [
+        'A wireless mouse with ergonomic design and long battery life',
+        'Portable bluetooth speaker with great sound quality',
+        'Classic wired keyboard with tactile feedback',
+        'Adjustable laptop stand for better posture',
+        'Surround sound gaming headset with microphone'
+    ]
+}
+
+df = pd.DataFrame(data)
+
+# 2. TF-IDF Vectorizer
+tfidf = TfidfVectorizer(stop_words='english')
+tfidf_matrix = tfidf.fit_transform(df['description'])
+
+# 3. Compute similarity matrix
+cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
+
+# 4. Recommendation function
+def get_recommendations(title, cosine_sim=cosine_sim):
+    idx = df[df['name'] == title].index[0]
+    sim_scores = list(enumerate(cosine_sim[idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    sim_scores = sim_scores[1:4]  # Top 3
+    product_indices = [i[0] for i in sim_scores]
+    return df['name'].iloc[product_indices]
+
+# 5. Example test
+print("🔍 Recommendations for 'Wireless Mouse':")
+print(get_recommendations('Wireless Mouse'))
